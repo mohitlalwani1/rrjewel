@@ -26,6 +26,9 @@ interface AppState {
   cart: CartItem[];
   wishlist: Product[];
   isSignInOpen: boolean;
+  searchQuery: string;
+  searchResults: Product[];
+  isSearchOpen: boolean;
 }
 
 type AppAction =
@@ -36,13 +39,19 @@ type AppAction =
   | { type: 'CLEAR_CART' }
   | { type: 'ADD_TO_WISHLIST'; payload: Product }
   | { type: 'REMOVE_FROM_WISHLIST'; payload: number }
-  | { type: 'TOGGLE_SIGNIN'; payload?: boolean };
+  | { type: 'TOGGLE_SIGNIN'; payload?: boolean }
+  | { type: 'SET_SEARCH_QUERY'; payload: string }
+  | { type: 'SET_SEARCH_RESULTS'; payload: Product[] }
+  | { type: 'TOGGLE_SEARCH'; payload?: boolean };
 
 const initialState: AppState = {
   user: null,
   cart: [],
   wishlist: [],
   isSignInOpen: false,
+  searchQuery: '',
+  searchResults: [],
+  isSearchOpen: false,
 };
 
 const appReducer = (state: AppState, action: AppAction): AppState => {
@@ -105,6 +114,18 @@ const appReducer = (state: AppState, action: AppAction): AppState => {
       return {
         ...state,
         isSignInOpen: action.payload !== undefined ? action.payload : !state.isSignInOpen,
+      };
+    
+    case 'SET_SEARCH_QUERY':
+      return { ...state, searchQuery: action.payload };
+    
+    case 'SET_SEARCH_RESULTS':
+      return { ...state, searchResults: action.payload };
+    
+    case 'TOGGLE_SEARCH':
+      return {
+        ...state,
+        isSearchOpen: action.payload !== undefined ? action.payload : !state.isSearchOpen,
       };
     
     default:
