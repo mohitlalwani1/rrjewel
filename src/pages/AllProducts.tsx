@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { Heart, ChevronDown } from 'lucide-react';
+import { Heart, ChevronDown, ShoppingBag } from 'lucide-react';
+import { useAppContext } from '../context/AppContext';
 
 const AllProducts = () => {
+  const { state, dispatch } = useAppContext();
   const [selectedFilters, setSelectedFilters] = useState({
     collection: '',
     availability: '',
@@ -93,8 +95,21 @@ const AllProducts = () => {
     { name: 'Shop By', count: 19 },
     { name: 'All Products', count: 19 },
     { name: 'Track Order', count: 0 },
-    { name: 'Our Story', count: 0 }
+    { name: 'Contact', count: 0 }
   ];
+
+  const toggleWishlist = (product: any) => {
+    const isInWishlist = state.wishlist.find(item => item.id === product.id);
+    if (isInWishlist) {
+      dispatch({ type: 'REMOVE_FROM_WISHLIST', payload: product.id });
+    } else {
+      dispatch({ type: 'ADD_TO_WISHLIST', payload: product });
+    }
+  };
+
+  const addToCart = (product: any) => {
+    dispatch({ type: 'ADD_TO_CART', payload: product });
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -207,45 +222,63 @@ const AllProducts = () => {
           {/* Products Grid */}
           <div className="w-3/4">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {products.map((product) => (
-                <div key={product.id} className="group cursor-pointer">
-                  <div className="relative overflow-hidden rounded-lg bg-gray-100 aspect-square mb-4">
-                    {product.sale && (
-                      <div className="absolute top-4 left-4 bg-amber-900 text-white px-3 py-1 text-sm font-medium rounded z-10">
-                        Sale
-                      </div>
-                    )}
-                    {product.soldOut && (
-                      <div className="absolute top-4 right-12 bg-red-500 text-white px-3 py-1 text-sm font-medium rounded z-10">
-                        Sold Out
-                      </div>
-                    )}
-                    <button className="absolute top-4 right-4 p-2 bg-white rounded-full shadow-md hover:shadow-lg transition-shadow z-10">
-                      <Heart className="h-4 w-4 text-gray-600 hover:text-red-500 transition-colors" />
-                    </button>
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
-                  <div className="text-center">
-                    <h3 className="text-sm font-medium text-gray-900 mb-2">
-                      {product.name}
-                    </h3>
-                    <div className="flex items-center justify-center space-x-2">
-                      <span className="text-lg font-bold text-gray-900">
-                        Rs. {product.price.toLocaleString()}.00
-                      </span>
-                      {product.originalPrice && (
-                        <span className="text-sm text-gray-500 line-through">
-                          Rs. {product.originalPrice.toLocaleString()}.00
-                        </span>
+              {products.map((product) => {
+                const isInWishlist = state.wishlist.find(item => item.id === product.id);
+                
+                return (
+                  <div key={product.id} className="group cursor-pointer">
+                    <div className="relative overflow-hidden rounded-lg bg-gray-100 aspect-square mb-4">
+                      {product.sale && (
+                        <div className="absolute top-4 left-4 bg-amber-900 text-white px-3 py-1 text-sm font-medium rounded z-10">
+                          Sale
+                        </div>
+                      )}
+                      {product.soldOut && (
+                        <div className="absolute top-4 right-12 bg-red-500 text-white px-3 py-1 text-sm font-medium rounded z-10">
+                          Sold Out
+                        </div>
+                      )}
+                      <button 
+                        onClick={() => toggleWishlist(product)}
+                        className="absolute top-4 right-4 p-2 bg-white rounded-full shadow-md hover:shadow-lg transition-shadow z-10"
+                      >
+                        <Heart className={`h-4 w-4 transition-colors ${
+                          isInWishlist ? 'text-red-500 fill-current' : 'text-gray-600 hover:text-red-500'
+                        }`} />
+                      </button>
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      {!product.soldOut && (
+                        <button
+                          onClick={() => addToCart(product)}
+                          className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-amber-900 text-white px-4 py-2 rounded-lg font-medium hover:bg-amber-800 transition-colors opacity-0 group-hover:opacity-100 flex items-center space-x-2"
+                        >
+                          <ShoppingBag className="h-4 w-4" />
+                          <span>Add to Cart</span>
+                        </button>
                       )}
                     </div>
+                    <div className="text-center">
+                      <h3 className="text-sm font-medium text-gray-900 mb-2">
+                        {product.name}
+                      </h3>
+                      <div className="flex items-center justify-center space-x-2">
+                        <span className="text-lg font-bold text-gray-900">
+                          Rs. {product.price.toLocaleString()}.00
+                        </span>
+                        {product.originalPrice && (
+                          <span className="text-sm text-gray-500 line-through">
+                            Rs. {product.originalPrice.toLocaleString()}.00
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Pagination */}

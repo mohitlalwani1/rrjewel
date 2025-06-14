@@ -1,9 +1,28 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, User, Heart, ShoppingBag, ChevronDown } from 'lucide-react';
+import { useAppContext } from '../context/AppContext';
+import Cart from './Cart';
+import Wishlist from './Wishlist';
 
 const Header = () => {
+  const { state, dispatch } = useAppContext();
   const [isShopByOpen, setIsShopByOpen] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isWishlistOpen, setIsWishlistOpen] = useState(false);
+
+  const handleUserClick = () => {
+    if (state.user) {
+      // If user is logged in, show user menu or logout
+      const shouldLogout = window.confirm('Do you want to sign out?');
+      if (shouldLogout) {
+        dispatch({ type: 'SET_USER', payload: null });
+      }
+    } else {
+      // If user is not logged in, show sign in modal
+      dispatch({ type: 'TOGGLE_SIGNIN', payload: true });
+    }
+  };
 
   return (
     <>
@@ -43,19 +62,38 @@ const Header = () => {
 
             {/* User actions */}
             <div className="flex items-center space-x-4">
-              <User className="h-5 w-5 text-gray-600 hover:text-amber-900 cursor-pointer transition-colors" />
-              <div className="relative">
+              <button
+                onClick={handleUserClick}
+                className="relative"
+                title={state.user ? `Signed in as ${state.user.name}` : 'Sign in'}
+              >
+                <User className={`h-5 w-5 transition-colors ${
+                  state.user ? 'text-amber-900' : 'text-gray-600 hover:text-amber-900'
+                }`} />
+                {state.user && (
+                  <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full"></div>
+                )}
+              </button>
+              
+              <button
+                onClick={() => setIsWishlistOpen(true)}
+                className="relative"
+              >
                 <Heart className="h-5 w-5 text-gray-600 hover:text-amber-900 cursor-pointer transition-colors" />
                 <span className="absolute -top-2 -right-2 bg-amber-900 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                  0
+                  {state.wishlist.length}
                 </span>
-              </div>
-              <div className="relative">
+              </button>
+              
+              <button
+                onClick={() => setIsCartOpen(true)}
+                className="relative"
+              >
                 <ShoppingBag className="h-5 w-5 text-gray-600 hover:text-amber-900 cursor-pointer transition-colors" />
                 <span className="absolute -top-2 -right-2 bg-amber-900 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                  0
+                  {state.cart.length}
                 </span>
-              </div>
+              </button>
             </div>
           </div>
 
@@ -120,15 +158,19 @@ const Header = () => {
               </Link>
               
               <Link 
-                to="/our-story" 
+                to="/contact" 
                 className="text-gray-700 font-medium hover:text-amber-900 transition-colors"
               >
-                OUR STORY
+                CONTACT
               </Link>
             </div>
           </nav>
         </div>
       </header>
+
+      {/* Modals */}
+      <Cart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+      <Wishlist isOpen={isWishlistOpen} onClose={() => setIsWishlistOpen(false)} />
     </>
   );
 };
